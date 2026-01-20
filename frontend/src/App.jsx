@@ -1,4 +1,6 @@
 import { useState } from "react";
+import Header from "./components/Header";
+import Card from "./components/Card";
 import { healthCheck, detectIntrusion, pqcDemo } from "./api";
 
 function App() {
@@ -12,9 +14,7 @@ function App() {
   }
 
   async function runDetection() {
-    // Dummy feature vector (same length as backend expects)
     const dummyFeatures = new Array(78).fill(0.01);
-
     const res = await detectIntrusion(dummyFeatures);
     setResult(res);
   }
@@ -25,33 +25,41 @@ function App() {
   }
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial" }}>
-      <h1>Federated IDS Dashboard</h1>
+    <div className="app">
+      <Header />
 
-      <button onClick={checkBackend}>Check Backend</button>
-      <p>{status}</p>
+      <div className="dashboard">
 
-      <hr />
+        <Card title="System Status">
+          <button onClick={checkBackend}>Check Backend</button>
+          <p className="status">{status || "Unknown"}</p>
+        </Card>
 
-      <button onClick={runDetection}>Run Intrusion Detection</button>
-      {result && (
-        <div>
-          <p><b>Prediction:</b> {result.prediction}</p>
-          <p><b>Error:</b> {result.reconstruction_error}</p>
-          <p><b>Threshold:</b> {result.threshold}</p>
-        </div>
-      )}
+        <Card title="Intrusion Detection">
+          <button onClick={runDetection}>Run Detection</button>
 
-      <hr />
+          {result && (
+            <>
+              <p><b>Prediction:</b> {result.prediction}</p>
+              <p><b>Error:</b> {result.reconstruction_error.toFixed(6)}</p>
+              <p><b>Threshold:</b> {result.threshold.toFixed(6)}</p>
+            </>
+          )}
+        </Card>
 
-      <button onClick={runPQC}>Run PQC Demo</button>
-      {pqc && (
-        <div>
-          <p>{pqc.kyber}</p>
-          <p>{pqc.encryption}</p>
-          <p>{pqc.signature}</p>
-        </div>
-      )}
+        <Card title="Post-Quantum Security">
+          <button onClick={runPQC}>Run PQC Demo</button>
+
+          {pqc && (
+            <>
+              <p>🔐 {pqc.kyber}</p>
+              <p>📦 {pqc.encryption}</p>
+              <p>✅ {pqc.signature}</p>
+            </>
+          )}
+        </Card>
+
+      </div>
     </div>
   );
 }

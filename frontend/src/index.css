@@ -1,68 +1,67 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+import { useState } from "react";
+import Header from "./components/Header";
+import Card from "./components/Card";
+import { healthCheck, detectIntrusion, pqcDemo } from "./api";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+function App() {
+  const [status, setStatus] = useState("");
+  const [result, setResult] = useState(null);
+  const [pqc, setPqc] = useState(null);
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+  async function checkBackend() {
+    const res = await healthCheck();
+    setStatus(res.status);
   }
-  a:hover {
-    color: #747bff;
+
+  async function runDetection() {
+    const dummyFeatures = new Array(78).fill(0.01);
+    const res = await detectIntrusion(dummyFeatures);
+    setResult(res);
   }
-  button {
-    background-color: #f9f9f9;
+
+  async function runPQC() {
+    const res = await pqcDemo();
+    setPqc(res);
   }
+
+  return (
+    <div className="app">
+      <Header />
+
+      <div className="dashboard">
+
+        <Card title="System Status">
+          <button onClick={checkBackend}>Check Backend</button>
+          <p className="status">{status || "Unknown"}</p>
+        </Card>
+
+        <Card title="Intrusion Detection">
+          <button onClick={runDetection}>Run Detection</button>
+
+          {result && (
+            <>
+              <p><b>Prediction:</b> {result.prediction}</p>
+              <p><b>Error:</b> {result.reconstruction_error.toFixed(6)}</p>
+              <p><b>Threshold:</b> {result.threshold.toFixed(6)}</p>
+            </>
+          )}
+        </Card>
+
+        <Card title="Post-Quantum Security">
+          <button onClick={runPQC}>Run PQC Demo</button>
+
+          {pqc && (
+            <>
+              <p>🔐 {pqc.kyber}</p>
+              <p>📦 {pqc.encryption}</p>
+              <p>✅ {pqc.signature}</p>
+            </>
+          )}
+        </Card>
+
+      </div>
+    </div>
+  );
 }
+
+export default App;
