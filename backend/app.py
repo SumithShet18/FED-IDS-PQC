@@ -1,3 +1,4 @@
+from routes import analytics_bp
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import torch
@@ -6,6 +7,8 @@ import numpy as np
 
 app = Flask(__name__)
 CORS(app)
+
+app.register_blueprint(analytics_bp)
 
 # -------------------------------------------------
 # MODEL DEFINITION (SAME AS TRAINING)
